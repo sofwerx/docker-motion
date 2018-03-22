@@ -1,5 +1,7 @@
 #!/bin/bash
 
+env > /.env
+
 mkdir -p /usr/local/etc/motion/
 cat <<EOF > /usr/local/etc/motion/motion.conf
 # Rename this distribution example file to motion.conf
@@ -85,7 +87,7 @@ height 720
 
 # Maximum number of frames to be captured per second.
 # Valid range: 2-100. Default: 100 (almost no limit).
-framerate 100
+framerate ${FRAMERATE:-30}
 
 # Minimum time in seconds between capturing picture frames from the camera.
 # Default: 0 = disabled - the capture rate is given by the camera framerate.
@@ -153,7 +155,7 @@ switchfilter off
 threshold 1500
 
 # Automatically tune the threshold down if possible (default: off)
-threshold_tune off
+threshold_tune on
 
 # Noise threshold for the motion detection (default: 32)
 noise_level 32
@@ -165,7 +167,7 @@ noise_level 32
 # Recommended value is EedDl. Any combination (and number of) of E, e, d, and D is valid.
 # (l)abeling must only be used once and the 'l' must be the last letter.
 # Comment out to disable
-; despeckle_filter EedDl
+despeckle_filter EedDl
 
 # Detect motion in predefined areas (1 - 9). Areas are numbered like that:  1 2 3
 # A script (on_area_detected) is started immediately when motion is         4 5 6
@@ -211,7 +213,7 @@ post_capture 0
 # events causing all Motion to be written to one single movie file and no pre_capture.
 # If set to 0, motion is running in gapless mode. Movies don't have gaps anymore. An
 # event ends right after no more motion is detected and post_capture is over.
-event_gap 60
+event_gap 0
 
 # Maximum length in seconds of a movie
 # When value is exceeded a new movie file is created. (Default: 0 = infinite)
@@ -231,7 +233,7 @@ emulate_motion off
 # Picture with most motion of an event is saved when set to 'best'.
 # Picture with motion nearest center of picture is saved when set to 'center'.
 # Can be used as preview shot for the corresponding movie.
-output_pictures off
+output_pictures on
 
 # Output pictures with only the pixels moving object (ghost images) (default: off)
 output_debug_pictures off
@@ -246,7 +248,7 @@ picture_type jpeg
 ############################################################
 
 # Use ffmpeg to encode videos of motion (default: off)
-ffmpeg_output_movies off
+ffmpeg_output_movies on
 
 # Use ffmpeg to make videos showing the moving pixels (ghost images) (default: off)
 ffmpeg_output_debug_movies off
@@ -263,12 +265,12 @@ ffmpeg_variable_bitrate 0
 
 # Container/Codec output videos
 # Valid values: mpeg4, msmpeg4, swf,flv, ffv1, mov, mp4, mkv, hevc
-ffmpeg_video_codec mkv
+ffmpeg_video_codec mpeg4
 
 # When creating videos, should frames be duplicated in order
 # to keep up with the requested frames per second
 # (default: false)
-; ffmpeg_duplicate_frames false
+ffmpeg_duplicate_frames false
 
 # Interval in seconds between timelapse captures.  Default: 0 = off
 timelapse_interval 0
@@ -280,7 +282,7 @@ timelapse_mode daily
 timelapse_fps 30
 
 # Container/Codec for timelapse video. Valid values: mpg or mpeg4
-timelapse_codec mpg
+timelapse_codec mpeg4
 
 ############################################################
 # External pipe to video encoder
@@ -581,40 +583,40 @@ quiet on
 
 # Command to be executed when an event starts. (default: none)
 # An event starts at first motion detected after a period of no motion defined by event_gap
-; on_event_start value
+on_event_start /event_start.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
 
 # Command to be executed when an event ends after a period of no motion
 # (default: none). The period of no motion is defined by option event_gap.
-; on_event_end value
+on_event_end /event_end.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
 
 # Command to be executed when a picture (.ppm|.jpg) is saved (default: none)
 # To give the filename as an argument to a command append it with %f
-; on_picture_save value
+on_picture_save /picture_save.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
 
 # Command to be executed when a motion frame is detected (default: none)
-; on_motion_detected value
+on_motion_detected /motion_detected.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
 
 # Command to be executed when motion in a predefined area is detected
 # Check option 'area_detect'.   (default: none)
-; on_area_detected value
+on_area_detected /area_detected.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
 
 # Command to be executed when a movie file (.mpg|.avi) is created. (default: none)
 # To give the filename as an argument to a command append it with %f
-; on_movie_start value
+on_movie_start /movie_start.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
 
 # Command to be executed when a movie file (.mpg|.avi) is closed. (default: none)
 # To give the filename as an argument to a command append it with %f
-; on_movie_end value
+on_movie_end /movie_end.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
 
 # Command to be executed when a camera can't be opened or if it is lost
 # NOTE: There is situations when motion don't detect a lost camera!
 # It depends on the driver, some drivers dosn't detect a lost camera at all
 # Some hangs the motion thread. Some even hangs the PC! (default: none)
-; on_camera_lost value
+on_camera_lost /camera_lost.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
 
 # Command to be executed when a camera that was lost has been found (default: none)
 # NOTE: If motion doesn't properly detect a lost camera, it also won't know it found one.
-; on_camera_found value
+on_camera_found /camera_found.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
 
 #####################################################################
 # Common Options for database features.
