@@ -424,7 +424,7 @@ ipv6_enabled off
 ############################################################
 
 # The mini-http server listens to this port for requests (default: 0 = disabled)
-stream_port 8081
+stream_port ${STREAM_PORT:-8081}
 
 # 50% scaled down substream (default: 0 = disabled)
 # substream_port 8082
@@ -471,7 +471,7 @@ stream_auth_method 0
 ############################################################
 
 # TCP/IP port for the http server to listen on (default: 0 = disabled)
-webcontrol_port 8080
+webcontrol_port ${WEBCONTROL_PORT:-8080}
 
 # Restrict control connections to localhost only (default: on)
 webcontrol_localhost off
