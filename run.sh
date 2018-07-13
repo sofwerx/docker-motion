@@ -2,6 +2,11 @@
 
 env > /.env
 
+if [ -n "$MINIO_ACCESS_KEY" -a -n "$MINIO_SECRET_KEY" ]; then
+  mc config host add minio "${MINIO_URL}" "${MINIO_ACCESS_KEY}" "${MINIO_SECRET_KEY}"
+  mc mb minio/motion
+fi
+
 mkdir -p /usr/local/etc/motion/
 cat <<EOF > /usr/local/etc/motion/motion.conf
 # Rename this distribution example file to motion.conf
@@ -583,40 +588,40 @@ quiet on
 
 # Command to be executed when an event starts. (default: none)
 # An event starts at first motion detected after a period of no motion defined by event_gap
-on_event_start /event_start.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
+on_event_start /event_start.sh "{ \"event\": \"event_start\", \"label\": \"${RTSP_LABEL}\", \"time\": \"%T\", \"date\": \"%F\", \"zone\": \"%Z\", \"event_number\": \"%v\", \"per_second_frame_number\": \"%v\", \"thread_number\": \"%t\", \"motion_number_of_pixels\": \"%D\", \"noise_level\": \"%N\", \"motion_width\": \"%i\", \"motion_height\": \"%J\", \"motion_x\": \"%K\", \"motion_y\": \"%L\", \"text\": \"%C\", \"filename\": \"%f\", \"filetype\": \"%n\", \"host\": \"%{host}\", \"fps\": \"%{fps}\", \"dbeventid\": \"%{dbeventid}\", \"path\": \"%Y/%m/%d/%H/%M/%Y%m%d%H%M%S\" }"
 
 # Command to be executed when an event ends after a period of no motion
 # (default: none). The period of no motion is defined by option event_gap.
-on_event_end /event_end.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
+on_event_end /event_end.sh "{ \"event\": \"event_end\", \"label\": \"${RTSP_LABEL}\", \"time\": \"%T\", \"date\": \"%F\", \"zone\": \"%Z\", \"event_number\": \"%v\", \"per_second_frame_number\": \"%v\", \"thread_number\": \"%t\", \"motion_number_of_pixels\": \"%D\", \"noise_level\": \"%N\", \"motion_width\": \"%i\", \"motion_height\": \"%J\", \"motion_x\": \"%K\", \"motion_y\": \"%L\", \"text\": \"%C\", \"filename\": \"%f\", \"filetype\": \"%n\", \"host\": \"%{host}\", \"fps\": \"%{fps}\", \"dbeventid\": \"%{dbeventid}\", \"path\": \"%Y/%m/%d/%H/%M/%Y%m%d%H%M%S\" }"
 
 # Command to be executed when a picture (.ppm|.jpg) is saved (default: none)
 # To give the filename as an argument to a command append it with %f
-on_picture_save /picture_save.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
+on_picture_save /picture_save.sh "{ \"event\": \"picture_save\", \"label\": \"${RTSP_LABEL}\", \"time\": \"%T\", \"date\": \"%F\", \"zone\": \"%Z\", \"event_number\": \"%v\", \"per_second_frame_number\": \"%v\", \"thread_number\": \"%t\", \"motion_number_of_pixels\": \"%D\", \"noise_level\": \"%N\", \"motion_width\": \"%i\", \"motion_height\": \"%J\", \"motion_x\": \"%K\", \"motion_y\": \"%L\", \"text\": \"%C\", \"filename\": \"%f\", \"filetype\": \"%n\", \"host\": \"%{host}\", \"fps\": \"%{fps}\", \"dbeventid\": \"%{dbeventid}\", \"path\": \"%Y/%m/%d/%H/%M/%Y%m%d%H%M%S\", \"media\": \"${SECURE_MINIO_URL}/motion%f\" }"
 
 # Command to be executed when a motion frame is detected (default: none)
-on_motion_detected /motion_detected.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
+on_motion_detected /motion_detected.sh "{ \"event\": \"motion_detected\", \"label\": \"${RTSP_LABEL}\", \"time\": \"%T\", \"date\": \"%F\", \"zone\": \"%Z\", \"event_number\": \"%v\", \"per_second_frame_number\": \"%v\", \"thread_number\": \"%t\", \"motion_number_of_pixels\": \"%D\", \"noise_level\": \"%N\", \"motion_width\": \"%i\", \"motion_height\": \"%J\", \"motion_x\": \"%K\", \"motion_y\": \"%L\", \"text\": \"%C\", \"filename\": \"%f\", \"filetype\": \"%n\", \"host\": \"%{host}\", \"fps\": \"%{fps}\", \"dbeventid\": \"%{dbeventid}\", \"path\": \"%Y/%m/%d/%H/%M/%Y%m%d%H%M%S\" }"
 
 # Command to be executed when motion in a predefined area is detected
 # Check option 'area_detect'.   (default: none)
-on_area_detected /area_detected.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
+on_area_detected /area_detected.sh "{ \"event\": \"area_detected\", \"label\": \"${RTSP_LABEL}\", \"time\": \"%T\", \"date\": \"%F\", \"zone\": \"%Z\", \"event_number\": \"%v\", \"per_second_frame_number\": \"%v\", \"thread_number\": \"%t\", \"motion_number_of_pixels\": \"%D\", \"noise_level\": \"%N\", \"motion_width\": \"%i\", \"motion_height\": \"%J\", \"motion_x\": \"%K\", \"motion_y\": \"%L\", \"text\": \"%C\", \"filename\": \"%f\", \"filetype\": \"%n\", \"host\": \"%{host}\", \"fps\": \"%{fps}\", \"dbeventid\": \"%{dbeventid}\", \"path\": \"%Y/%m/%d/%H/%M/%Y%m%d%H%M%S\" }"
 
 # Command to be executed when a movie file (.mpg|.avi) is created. (default: none)
 # To give the filename as an argument to a command append it with %f
-on_movie_start /movie_start.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
+on_movie_start /movie_start.sh "{ \"event\": \"movie_start\", \"label\": \"${RTSP_LABEL}\", \"time\": \"%T\", \"date\": \"%F\", \"zone\": \"%Z\", \"event_number\": \"%v\", \"per_second_frame_number\": \"%v\", \"thread_number\": \"%t\", \"motion_number_of_pixels\": \"%D\", \"noise_level\": \"%N\", \"motion_width\": \"%i\", \"motion_height\": \"%J\", \"motion_x\": \"%K\", \"motion_y\": \"%L\", \"text\": \"%C\", \"filename\": \"%f\", \"filetype\": \"%n\", \"host\": \"%{host}\", \"fps\": \"%{fps}\", \"dbeventid\": \"%{dbeventid}\", \"path\": \"%Y/%m/%d/%H/%M/%Y%m%d%H%M%S\" }"
 
 # Command to be executed when a movie file (.mpg|.avi) is closed. (default: none)
 # To give the filename as an argument to a command append it with %f
-on_movie_end /movie_end.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
+on_movie_end /movie_end.sh "{ \"event\": \"movie_end\", \"label\": \"${RTSP_LABEL}\", \"time\": \"%T\", \"date\": \"%F\", \"zone\": \"%Z\", \"event_number\": \"%v\", \"per_second_frame_number\": \"%v\", \"thread_number\": \"%t\", \"motion_number_of_pixels\": \"%D\", \"noise_level\": \"%N\", \"motion_width\": \"%i\", \"motion_height\": \"%J\", \"motion_x\": \"%K\", \"motion_y\": \"%L\", \"text\": \"%C\", \"filename\": \"%f\", \"filetype\": \"%n\", \"host\": \"%{host}\", \"fps\": \"%{fps}\", \"dbeventid\": \"%{dbeventid}\", \"path\": \"%Y/%m/%d/%H/%M/%Y%m%d%H%M%S\", \"media\": \"${SECURE_MINIO_URL}/motion%f\" }"
 
 # Command to be executed when a camera can't be opened or if it is lost
 # NOTE: There is situations when motion don't detect a lost camera!
 # It depends on the driver, some drivers dosn't detect a lost camera at all
 # Some hangs the motion thread. Some even hangs the PC! (default: none)
-on_camera_lost /camera_lost.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
+on_camera_lost /camera_lost.sh "{ \"event\": \"camera_lost\", \"label\": \"${RTSP_LABEL}\", \"time\": \"%T\", \"date\": \"%F\", \"zone\": \"%Z\", \"event_number\": \"%v\", \"per_second_frame_number\": \"%v\", \"thread_number\": \"%t\", \"motion_number_of_pixels\": \"%D\", \"noise_level\": \"%N\", \"motion_width\": \"%i\", \"motion_height\": \"%J\", \"motion_x\": \"%K\", \"motion_y\": \"%L\", \"text\": \"%C\", \"filename\": \"%f\", \"filetype\": \"%n\", \"host\": \"%{host}\", \"fps\": \"%{fps}\", \"dbeventid\": \"%{dbeventid}\", \"path\": \"%Y/%m/%d/%H/%M/%Y%m%d%H%M%S\" }"
 
 # Command to be executed when a camera that was lost has been found (default: none)
 # NOTE: If motion doesn't properly detect a lost camera, it also won't know it found one.
-on_camera_found /camera_found.sh Y="%Y" m="%m" d="%d" H="%H" M="%M" S="%S" T="%T" v="%v" q="%q" t="%t" D="%D" N="%N" i="%i" J="%J" K="%K" L="%L" C="%C" f="%f" n="%n" host="%{host}" fps="%{fps}" dbeventid="%{dbeventid}"
+on_camera_found /camera_found.sh "{ \"event\": \"camera_found\", \"label\": \"${RTSP_LABEL}\", \"time\": \"%T\", \"date\": \"%F\", \"zone\": \"%Z\", \"event_number\": \"%v\", \"per_second_frame_number\": \"%v\", \"thread_number\": \"%t\", \"motion_number_of_pixels\": \"%D\", \"noise_level\": \"%N\", \"motion_width\": \"%i\", \"motion_height\": \"%J\", \"motion_x\": \"%K\", \"motion_y\": \"%L\", \"text\": \"%C\", \"filename\": \"%f\", \"filetype\": \"%n\", \"host\": \"%{host}\", \"fps\": \"%{fps}\", \"dbeventid\": \"%{dbeventid}\", \"path\": \"%Y/%m/%d/%H/%M/%Y%m%d%H%M%S\" }"
 
 #####################################################################
 # Common Options for database features.

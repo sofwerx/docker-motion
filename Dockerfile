@@ -19,6 +19,11 @@ RUN ./configure
 RUN make
 RUN make install
 
+# Minio client
+RUN curl -o /usr/local/bin/mc https://dl.minio.io/client/mc/release/linux-amd64/mc
+RUN chmod +x /usr/local/bin/mc
+RUN apt-get install -y jq
+
 ADD run.sh /run.sh
 ADD scripts/ /
 
